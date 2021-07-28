@@ -6,6 +6,8 @@ class PostSerializer(ModelSerializer):
     likes = serializers.IntegerField(source='likes_on_post',read_only=True)
     comment = serializers.IntegerField(source='comment_on_post',read_only=True)
     username = serializers.CharField(source='user.username',read_only=True)
+    image_url = serializers.CharField(source='get_image_url', read_only=True)
+
     
     class Meta:
         model = Post

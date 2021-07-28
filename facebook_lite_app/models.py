@@ -1,16 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField
+from django.db.models.signals import pre_delete
+import cloudinary
+from django.dispatch import receiver
 
 # Create your models here.
 
 class Post(models.Model):
     content = models.TextField()
-    likes = models.ForeignKey(User, on_delete = models.CASCADE)
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
+    image = CloudinaryField('image', blank = True, null = True)
 
-    def likes_on_post(self):
-        return Like.objects.filter(likes=self).count()
+    def get_image_url(self):
+        return self.image.url
+
+    def comment_on_likes(self):
+        return Like.objects.filter(post=self).count()
 
     def comment_on_post(self):
         return Comment.objects.filter(post=self).count()
@@ -35,3 +42,6 @@ class Like(models.Model):
         unique_together = ('likes','post',)
 
 
+@receiver(pre_delete, sender=Post)
+def photo_delete(sender, instance, **kwargs):
+    cloudinary.uploader.destroy(instance.image.public_id)
